@@ -1,13 +1,15 @@
 const LineReader = require('linereader');
 
-const lr = new LineReader('./kbn2021-04.txt')
+const lr = new LineReader('./blackkbn-2021-04.pgn')
 
 const prefixes = ['Site', 'White ', 'Black ', 'Result', 'WhiteElo', 'BlackElo', 'Termination'];
-const winner = ['[Result "1-0"]', '[Result "0-1"]']
 
 const unfilteredGames = [];
 let filteredGames = [];
 let gamesCollect = [];
+
+const checkmates = [];
+const notCheckmates = [];
 
 // On error in reading the file
 lr.on('error', function (err) {
@@ -34,7 +36,17 @@ lr.on('line', function (lineno, line) {
 
 // If all lines have been read
 lr.on('end', function () {
-  // Filters the games for Normal termination, and a result of either 1-0 or 0-1
-  filteredGames = unfilteredGames.filter(thisGame => thisGame.includes('[Termination "Normal"]')).filter(thisGame => winner.some(entry => thisGame.includes(entry)));
-  // console.log(filteredGames);
+  // Filters the games for Normal termination
+  filteredGames = unfilteredGames.filter(thisGame => thisGame.includes('[Termination "Normal"]'));
+
+  // Iterates through the games with normal termination
+  for (game of filteredGames) {
+    if (game[3] == '[Result "1-0"]') {
+
+    } else {
+      const rating = parseInt(game[5].slice(11, -2));
+      notCheckmates.push([rating, 0]);
+    }
+  }
+
 });
