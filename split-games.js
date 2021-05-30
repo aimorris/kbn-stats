@@ -1,4 +1,3 @@
-const fs = require('fs');
 const LineReader = require('linereader');
 
 const lr = new LineReader('./kbn2021-04.txt')
@@ -37,5 +36,5 @@ lr.on('line', function (lineno, line) {
 lr.on('end', function () {
   // Filters the games for Normal termination, and a result of either 1-0 or 0-1
   filteredGames = unfilteredGames.filter(thisGame => thisGame.includes('[Termination "Normal"]')).filter(thisGame => winner.some(entry => thisGame.includes(entry)));
-  console.log(filteredGames);
+  // console.log(filteredGames);
 });
