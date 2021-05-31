@@ -1,7 +1,9 @@
 const LineReader = require('linereader');
 const fetch = require('node-fetch');
+const fs = require('fs');
 
-const lr = new LineReader('./blackkbn-2021-04.pgn')
+const args = process.argv.slice(2);
+const lr = new LineReader(args[0]);
 
 const prefixes = ['Site', 'White ', 'Black ', 'Result', 'WhiteElo', 'BlackElo', 'Termination'];
 
@@ -41,28 +43,59 @@ lr.on('end', async function () {
 
   // Iterates through the games with normal termination
   for (game of filteredGames) {
-    // Get Black's rating
-    const rating = parseInt(game[5].slice(11, -2));
+    if (args[1] == 'black') {
+      // Get Black's rating
+      const rating = parseInt(game[5].slice(11, -2));
 
-    // If black won (i.e. checkmated)
-    if (game[3] == '[Result "0-1"]') {
-      // Get username
-      const user = game[2].slice(8, -2);
+      // If Black won (i.e. checkmated)
+      if (game[3] == '[Result "0-1"]') {
+        // Get username
+        const user = game[2].slice(8, -2);
 
-      // Check user for tosViolation
-      fetch('https://lichess.org/api/user/' + user)
-      .then(res => res.json())
-      .then(json => {
-        if (!json.tosViolation || false) {
-          // Push [blackRating, 1] to the checkmates array if checkmated
-          checkmates.push([rating, 1]);
-        }
-      });
+        // Check user for tosViolation
+        fetch('https://lichess.org/api/user/' + user)
+        .then(res => res.json())
+        .then(json => {
+          if (!json.tosViolation || false) {
+            // Push [blackRating, 1] to the checkmates array if checkmated
+            checkmates.push([rating, 1]);
+          }
+        });
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      } else {
+        // Push [blackRating, 0] to the checkmates array if failed to checkmate
+        checkmates.push([rating, 0]);
+      }
     } else {
-      // Push [blackRating, 0] to the checkmates array if failed to checkmate
-      checkmates.push([rating, 0]);
+      // Get White's rating
+      const rating = parseInt(game[4].slice(11, -2));
+
+      // If White won (i.e. checkmated)
+      if (game[3] == '[Result "1-0"]') {
+        // Get username
+        const user = game[1].slice(8, -2);
+
+        // Check user for tosViolation
+        fetch('https://lichess.org/api/user/' + user)
+        .then(res => res.json())
+        .then(json => {
+          if (!json.tosViolation || false) {
+            // Push [whiteRating, 1] to the checkmates array if checkmated
+            checkmates.push([rating, 1]);
+          }
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      } else {
+        // Push [whiteRating, 0] to the checkmates array if failed to checkmate
+        checkmates.push([rating, 0]);
+      }
     }
   }
+
+  const jsonString = JSON.stringify(checkmates);
+  fs.writeFile(args[0].slice(0, -4) + '.js', 'const checkmates = ' + jsonString, err => {
+    console.log(err ? 'Success' : 'Error' + err);
+  })
 });
