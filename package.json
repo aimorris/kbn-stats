@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "linereader": "^1.1.0"
+    "linereader": "^1.1.0",
+    "node-fetch": "^2.6.1"
   }
 }

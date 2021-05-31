@@ -1,4 +1,5 @@
 const LineReader = require('linereader');
+const fetch = require('node-fetch');
 
 const lr = new LineReader('./blackkbn-2021-04.pgn')
 
@@ -9,7 +10,6 @@ let filteredGames = [];
 let gamesCollect = [];
 
 const checkmates = [];
-const notCheckmates = [];
 
 // On error in reading the file
 lr.on('error', function (err) {
@@ -35,18 +35,34 @@ lr.on('line', function (lineno, line) {
 });
 
 // If all lines have been read
-lr.on('end', function () {
+lr.on('end', async function () {
   // Filters the games for Normal termination
   filteredGames = unfilteredGames.filter(thisGame => thisGame.includes('[Termination "Normal"]'));
 
   // Iterates through the games with normal termination
   for (game of filteredGames) {
-    if (game[3] == '[Result "1-0"]') {
+    // Get Black's rating
+    const rating = parseInt(game[5].slice(11, -2));
 
+    // If black won (i.e. checkmated)
+    if (game[3] == '[Result "0-1"]') {
+      // Get username
+      const user = game[2].slice(8, -2);
+
+      // Check user for tosViolation
+      fetch('https://lichess.org/api/user/' + user)
+      .then(res => res.json())
+      .then(json => {
+        if (!json.tosViolation || false) {
+          // Push [blackRating, 1] to the checkmates array if checkmated
+          checkmates.push([rating, 1]);
+        }
+      });
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
     } else {
-      const rating = parseInt(game[5].slice(11, -2));
-      notCheckmates.push([rating, 0]);
+      // Push [blackRating, 0] to the checkmates array if failed to checkmate
+      checkmates.push([rating, 0]);
     }
   }
-
 });
