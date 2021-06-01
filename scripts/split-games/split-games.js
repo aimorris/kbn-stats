@@ -95,7 +95,13 @@ lr.on('end', async function () {
   }
 
   const jsonString = JSON.stringify(checkmates);
-  fs.writeFile(args[0].slice(0, -4) + '.js', 'const checkmates = ' + jsonString, err => {
-    console.log(err ? 'Success' : 'Error' + err);
-  })
+  if (args[1] == 'black') {
+    fs.writeFile('../../data/' + args[0].slice(0, -4) + '.js', 'const blackCheckmates = ' + jsonString, err => {
+      console.log(err ? 'Success' : 'Error' + err);
+    })
+  } else {
+    fs.writeFile('../../data/' + args[0].slice(0, -4) + '.js', 'const whiteCheckmates = ' + jsonString, err => {
+      console.log(err ? 'Success' : 'Error' + err);
+    })
+  }
 });
