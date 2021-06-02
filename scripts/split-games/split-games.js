@@ -38,22 +38,28 @@ lr.on('end', async function () {
     const parseRating = s => parseInt(s.slice(11, -2));
     const parseUsername = s => s.slice(8, -2);
     const parseGameId = s => s.slice(27, -2);
-    const checkTosViolation = user => fetch('https://lichess.org/api/user/' + user).then(res => res.json().tosViolation);
+    const checkTosViolation = user => fetch('https://lichess.org/api/user/' + user).then(res => res.json()).then(userData => userData.tosViolation || userData.closed);
+    const checkResign = (gameId) => fetch(`https://lichess.org/game/export/${gameId}?tags=false&clocks=false&literate=true`).then(res => res.text()).then(pgn => isBlack ? pgn.includes('White resigns') : pgn.includes('Black resigns'));
     const checkResult = async (ratingStr, usernameStr, resultStr) => {
       const isWin = game[3] == resultStr;
+      const hasViolator = isWin ? await checkTosViolation(parseUsername(usernameStr)) : true;
       console.log(usernameStr);
       return [
         parseRating(ratingStr),
         isWin,
-        isWin ? await checkTosViolation(parseUsername(usernameStr)) : false
+        isWin ? hasViolator : false,
+        !hasViolator ? await checkResign(parseGameId(game[0])) : true
       ];
     }
 
-    const [rating, isWin, hasViolator] = isBlack ?
+    const [rating, isWin, hasViolator, resigned] = isBlack ?
       await checkResult(game[5], game[2], '[Result "0-1"]') :
       await checkResult(game[4], game[1], '[Result "1-0"]');
 
-    if (!hasViolator) checkmates.push(isWin ? [rating, 1] : [rating, 0]);
+    if (!hasViolator) {
+      checkmates.push(isWin && !resigned ? [rating, 1] : [rating, 0]);
+      console.log(game[0], isWin && !resigned);
+    }
 
     if (isWin) await limit();
   }
