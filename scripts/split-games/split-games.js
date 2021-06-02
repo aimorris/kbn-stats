@@ -65,7 +65,7 @@ lr.on('end', async function () {
   }
 
   const jsonString = JSON.stringify(checkmates);
-  fs.writeFile(`../../data/${args[0].slice(0, -4)}.js`, `const ${isBlack ? 'black' : 'white'}Checkmates = ` + jsonString, err => {
+  fs.writeFile(`${args[0].slice(0, -4)}.js`, `const ${isBlack ? 'black' : 'white'}Checkmates = ` + jsonString, err => {
     console.log(err ? 'Success' : 'Error' + err);
   })
 });
