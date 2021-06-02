@@ -37,6 +37,7 @@ lr.on('end', async function () {
   for (game of filteredGames) {
     const parseRating = s => parseInt(s.slice(11, -2));
     const parseUsername = s => s.slice(8, -2);
+    const parseGameId = s => s.slice(27, -2);
     const checkTosViolation = user => fetch('https://lichess.org/api/user/' + user).then(res => res.json().tosViolation);
     const checkResult = async (ratingStr, usernameStr, resultStr) => {
       const isWin = game[3] == resultStr;
