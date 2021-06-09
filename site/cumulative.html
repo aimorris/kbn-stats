@@ -10,8 +10,7 @@
   <div id="chart" style="width:100vw;height:100vh;"></div>
 </body>
 
-<script type="text/javascript" src="../data/blackkbn-2016-07.js"></script>
-<script type="text/javascript" src="../data/whitekbn-2016-07.js"></script>
+<script type="text/javascript" src="../data/cumulative.js"></script>
 <script>
   const intervalSize = 10;
 
@@ -22,7 +21,7 @@
 
   for (let i = 0; i < 3000; i += intervalSize) {
     // Filter checkmates at rating of this interval
-    const checkmatesAtThisRating = whiteCheckmates.filter(x => x[0] > i && x[0] < i + intervalSize).flatMap(x => x[1]).concat(blackCheckmates.filter(x => x[0] > i && x[0] < i + intervalSize).flatMap(x => x[1]));
+    const checkmatesAtThisRating = checkmates.filter(x => x[0] > i && x[0] < i + intervalSize).flatMap(x => x[1]);
     totalCheckmatePercentage = totalCheckmatePercentage.concat(checkmatesAtThisRating);
 
     const percentage = checkmatesAtThisRating.reduce((a, b) => a + b, 0) / checkmatesAtThisRating.length;
@@ -42,7 +41,7 @@
   ];
 
   const layout = {
-    title: `King-Bishop-Knight checkmate percentage vs Lichess rating for July 2016<br><sub>Total checkmate percentage for July 2016: ${Math.round(totalPercentage * 100 * 100)/100}%</sub>`,
+    title: `King-Bishop-Knight checkmate percentage vs Lichess rating<br><sub>Total checkmate percentage: ${Math.round(totalPercentage * 100 * 100)/100}%</sub>`,
     xaxis: {
       title: 'Lichess rating'
     },
